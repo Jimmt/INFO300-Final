@@ -18,19 +18,28 @@ stats <- stats %>% filter(Year >= 1998) %>% rename(season_end = Year, player = P
   group_by(season_end, player) %>% summarize_if(is.numeric, mean, na.rm = TRUE)
 stats$player <- sub("\\*", "", stats$player)
 stats$X3PAr <- stats$X3PA / stats$FGA
-stats$ref <- paste(stats$player, stats$season_end)
   
 salaries <- salaries %>% filter(season_end >= 1998) %>% filter(season_end != 2018)
-salaries$ref <- paste(salaries$player, salaries$season_end)
 
-
-merged <- merge(stats, salaries, by = "ref")
+merged <- merge(stats, salaries)
 merged <- merge(merged, salary.cap)
 merged$salary.ratio <- merged$salary / (merged$salary.cap * 1000000 * 30)
 
-specialists <- merged %>% filter(X3PAr > 0.6)
+x3p.stats <- merged %>% group_by(season_end) %>% 
+  summarize(avg.3p.percent = sum(X3P, na.rm = TRUE) / sum(X3PA, na.rm = TRUE))
 
+avg.3p.percent <- sapply(merged$season_end, function(x) {
+  x3p.stats[x3p.stats$season_end == x,]$avg.3p.percent})
 
+specialists <- merged %>% filter(X3PAr > 0.5 & (X3P / X3PA) >= avg.3p.percent & X3P >= 82)
 
-p <- plot_ly(data = specialists, x = ~season_end, y = ~salary)
+linear_model <- lm(salary.ratio ~ season_end, specialists)
+
+salary.over.time <- plot_ly(data = specialists, x = ~season_end, text = ~player) %>%
+  add_markers(y = ~salary.ratio) %>%
+  layout(xaxis = list(title = "Year"), yaxis = list(title = "Salary Ratio"))
+
+specialists.freq <- as.data.frame(table(specialists$season_end))
+specialists.over.time <- plot_ly(data = specialists.freq, x = ~Var1, y = ~Freq, type = 'scatter', mode = 'lines') %>%
+  layout(xaxis = list(title = "Year"), yaxis = list(title = "Number of 3-point specialists"))
 
