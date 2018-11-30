@@ -39,7 +39,15 @@ salary.over.time <- plot_ly(data = specialists, x = ~season_end, text = ~player)
   add_markers(y = ~salary.ratio) %>%
   layout(xaxis = list(title = "Year"), yaxis = list(title = "Salary Ratio"))
 
+salary.over.time <- ggplot(specialists, aes(x=season_end, y=salary.ratio, group=1)) + geom_point() + labs(x="Year", y = "Salary Ratio")
+
 specialists.freq <- as.data.frame(table(specialists$season_end))
 specialists.over.time <- plot_ly(data = specialists.freq, x = ~Var1, y = ~Freq, type = 'scatter', mode = 'lines') %>%
   layout(xaxis = list(title = "Year"), yaxis = list(title = "Number of 3-point specialists"))
 
+specialists.over.time <- ggplot(specialists.freq, aes(x=Var1, y=Freq, group=1)) + geom_line() + labs(x="Year", y = "Number of specialists")
+
+specialists.histogram <- plot_ly(x = specialists$salary.ratio, type = "histogram") %>%
+  layout(xaxis = list(title = "Salary Ratio"), yaxis = list(title = "Number of 3-point specialists"))
+
+specialists.histogram <- ggplot(specialists, aes(x=salary.ratio)) + geom_histogram() + labs(x="Salary Ratio", y = "Count")

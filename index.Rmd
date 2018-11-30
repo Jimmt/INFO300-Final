@@ -32,25 +32,38 @@ My topic is a specific investigation of how player performance affects pay, but 
 While these previous works provide thorough analysis of NBA data, none of them cover specifically whether three-point specialists have been paid more as three-point shooting has become more valuable. Lyons Jr. et al. determined that scoring was the primary factor (by far) for determining player salaries, but scoring is a broad and heterogeneous category, of which three point shooting is just a part. My scope is much narrower, focusing only on how three-point specialists are paid over time.
 
 ## Method
-There are two relevant datasets to this data analysis; the salaries of players and the stats of players. I pulled the salaries from data.world, and the stats from a dataset hosted on Kaggle. Both datasets were scraped from basketball-reference.com, a site that filters and retrieves a wide range of NBA statistics over a wide range of years. The salary data was available up to 2018, and the stats were available up to 2017. The integrity of this data is trustable, as basketball-reference is a widely used site for basketball statistics, and data.world and Kaggle are both well-known data science sites.
+There are two relevant datasets to this data analysis; the salaries of players and the stats of players. I pulled the salaries from data.world, and the stats from a dataset hosted on Kaggle. Both datasets were scraped from basketball-reference.com, a site that filters and retrieves a wide range of NBA statistics over a wide range of years. The salary data was available up to 2018, and the stats were available up to 2017. The integrity of this data is trustable, as basketball-reference is a widely used site for basketball statistics, and data.world and Kaggle are both well-known data science sites. Note that from here on, years will be referred as the year that ends a season. For example, when I say 2000, I mean the 1999-2000 season.
 
-For the data analysis itself, I combined the NBA salary and stats datasets and filter that down to a subset of only three-point specialists. Initially, I wanted to filter the dataset to all years when the three-point line was present, but I chose to only include information from 1998 to 2017, because the NBA three point line was shortened from 1994-1997. Dealing with NBA salary is tricky, because of factors like salary "cap" changes (how much each team is generally allowed to spend on players) and inflation. I chose to normalize player salary against the NBA salary cap for that year, as this accounts for the generally increasing amount that teams are willing to pay players as well as inflation (because the salary cap is" given in dollars from that year). I will refer to this new number as "Salary Ratio."
+For the data analysis itself, I combined the NBA salary and stats datasets and filter that down to a subset of only three-point specialists. Initially, I wanted to filter the dataset to all years when the three-point line was present, but I chose to only include information from 1998 to 2017, because the NBA three point line was shortened from 1994-1997. 
+
+Dealing with NBA salary is tricky, because of factors like salary "cap" changes (how much each team is generally allowed to spend on players) and inflation. I chose to normalize player salary against the NBA salary cap for that year, as this accounts for the generally increasing amount that teams allowed to pay players as well as inflation (because the salary cap is given in dollars from that year). I will refer to this new number as "Salary Ratio." As an example, if a player has a salary ratio of 0.01, then that player's salary would be 1% of the maximum allowed pay for all the players in the NBA. The NBA has what is called a "soft" salary cap, which means it can be exceeded, but this only exists in certain cases, most of which do not apply to three-point specialist type players anyways. Additionally, while these exceptions allow for salary raises, these raises are small in comparison with the total salary cap (Coon 2018).
 
 I adjusted the criteria for "three-point specialist" to make sure the set of players was usable (for example, not too many or too little players), performing exploratory data analysis on both the subset and superset to look at general patterns and potential problems or abnormalities. I ultimately used a filter of having 3PAr (proportion of shots taken that are three-pointers) greater than 50%, three point percentage above average for that year, and three-pointers made above 82. 3Par above 50% gave me the best sample to work with, as anything higher would result in almost no players being classified as three-point specialists in the 90s and early 2000s, but anything lower would result in too many players being classified as three-point specialists. I chose to filter players that were above average three-point shooters, because players taking a lot of three pointers but missing them are probably less likely to get paid (potentially confounding my analysis). Finally, making more than 82 three-pointers a game is a standard criteria for any data analysis involving the three-point shot ("Statistical Minimums").
 
 With the data prepared, I can then attempt to find a relationship between year and salary within this subset of NBA players, using linear and polynomial regression. I will compare the models and determine which one is most effective (or if neither of them is) by examining the p-value of the year variable (how statistically significant is the effect of year on salary) as well as the coeffcients/beta values. Based on these p-values and coefficients, I will finally conclude whether pay for three-point specialists has changed over time.
 
 ## Results
-The first step of constructing a relationship between pay and time for three-point specialists was to perform exploratory data analysis. Given the criteria mentioned above, these were the number of specialists for each year:
-```{r echo=FALSE, warning=FALSE}
-export(specialists.over.time)
+The first step of constructing a relationship between pay and time for three-point specialists was to perform exploratory data analysis. Given the criteria mentioned above, these were the number of three-point specialists for each year:
+```{r echo=FALSE, warning=FALSE, message = FALSE, fig.align='center'}
+specialists.over.time
 ```
+As expected, the number of three-point specialists has increased drastically over the years. This aligns with the increasing popularity of the three-point shot. However, even in earlier years, there were still three-point specialists (the minimum was two in 1998 and 1999). 2017 holds the peak in specialists at 31.
 
-```{r echo=FALSE, warning=FALSE}
-export(salary.over.time)
+Another visualization I explored was the distribution of salary ratio for all three-point specialists. I created a histogram of salary ratio to look at this.
+```{r echo=FALSE, warning=FALSE, message = FALSE, fig.align='center'}
+specialists.histogram
 ```
+We can see that the distribution is skewed right. This is as we expect, because most players are average and get paid averagely, but a few star players will get paid more. Most below average players would probably not meet my criteria for being a three-point specialist, so they do not show up here.
+
+I plotted the salary ratio (adjusted salary) of each player against the year that he played. This is the relationship that I'm attempting to model.
+```{r echo=FALSE, warning=FALSE, message = FALSE, fig.align='center'}
+salary.over.time
+```
+Looking at this scatterplot, it's not immediately obvious that there's any correlation between year and salary ratio. In fact, there's a spike of high salary values in 2010, which would reduce the strength of a linear regression. Nonetheless, I will try both linear and polynomial regression.
 
 ## References
+Coon, L. (2018, July 1). NBA Salary Cap. Retrieved from http://www.cbafaq.com/salarycap.htm
+
 Davis, C. (2017, December 04). NBA Salaries - dataset by datadavis. Retrieved from https://data.world/datadavis/nba-salaries
 
 Fichman, M., & O'Brien, J. (2018). Three point shooting and efficient mixed strategies: A portfolio management approach. Journal of Sports Analytics, 4(2), 107-120. doi:10.3233/jsa-160154
